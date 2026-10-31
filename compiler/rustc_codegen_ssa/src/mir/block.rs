@@ -2465,7 +2465,9 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
             match self.locals[index] {
                 LocalRef::Place(dest) => dest,
                 LocalRef::UnsizedPlace(_) => bug!("return type must be sized"),
-                LocalRef::PendingOperand => {
+                // Zero-sized operand locals start out initialized, see `LocalRef::new_operand`.
+                LocalRef::PendingOperand
+                | LocalRef::Operand(OperandRef { val: OperandValue::ZeroSized, .. }) => {
                     // Handle temporary places, specifically `Operand` ones, as
                     // they don't have `alloca`s.
                     return if fn_ret.is_indirect() {
